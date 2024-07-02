@@ -23,11 +23,17 @@ caldate_origin_wday0 <- caldate_origin_POSIXlt$wday
 # make it not very time-efficient either; an alternative to consider is to use
 # iterator concepts and/or lazy "algebraic" data frames building off of these
 # concepts to compactly represent the patterns below.
-date_cycle_period <- 365L*400L + 100L - 4L + 1L
+date_cycle_period <- 365L * 400L + 100L - 4L + 1L
 date_cycle_years_per_cycle <- 400L
 date_cycle_dates <- as.Date("1970-01-01") + seq_len(date_cycle_period) - 1L
-date_cycle_year_offset_pattern <- as.POSIXlt(date_cycle_dates)$year %>% {. - .[[1L]]}
-date_cycle_yday0_pattern <- as.POSIXlt(date_cycle_dates)$yday %>% {. - .[[1L]]}
+date_cycle_year_offset_pattern <- as.POSIXlt(date_cycle_dates)$year %>%
+  {
+    . - .[[1L]]
+  }
+date_cycle_yday0_pattern <- as.POSIXlt(date_cycle_dates)$yday %>%
+  {
+    . - .[[1L]]
+  }
 date_cycle_mon0_pattern <- as.POSIXlt(date_cycle_dates)$mon
 date_cycle_mday1_pattern <- as.POSIXlt(date_cycle_dates)$mday
 
@@ -52,142 +58,146 @@ date_cycle_mday1_pattern <- as.POSIXlt(date_cycle_dates)$mday
 caldate_of <- function(obj, ...) UseMethod("caldate_of", obj)
 #' @export
 caldate_of.Date <-
-    # XXX below branching probably commented out because broke roxygen2
+  # XXX below branching probably commented out because broke roxygen2
   #
-    # if (caldate.origin.Date.as.integer == 0L) {
-    #     function(obj, ...) {
-    #         `class<-`(
-    #             as.integer(obj),
-    #             "caldate"
-    #         )
-    #     }
-    # } else {
-        function(obj, ...) {
-            # `class<-`(
-            #     as.integer(obj) - caldate.origin.Date.as.integer,
-            #     "caldate"
-            # )
-            new_vctr(
-                vec_cast(unclass(obj), integer()) - caldate_origin_Date_as_integer,
-                class = "epicalendar_caldate"
-            )
-        }
-    # }
+  # if (caldate.origin.Date.as.integer == 0L) {
+  #     function(obj, ...) {
+  #         `class<-`(
+  #             as.integer(obj),
+  #             "caldate"
+  #         )
+  #     }
+  # } else {
+  function(obj, ...) {
+    # `class<-`(
+    #     as.integer(obj) - caldate.origin.Date.as.integer,
+    #     "caldate"
+    # )
+    new_vctr(
+      vec_cast(unclass(obj), integer()) - caldate_origin_Date_as_integer,
+      class = "epicalendar_caldate"
+    )
+  }
+# }
 #' @export
 caldate_of.character <- function(obj, ...) {
   caldate_of(as.Date(obj, ...))
 }
 
 #' @export
-caldate_of.epicalendar_caldate = function(obj, ...) obj
+caldate_of.epicalendar_caldate <- function(obj, ...) obj
 
 #' @export
-caldate_of_ymd_vecs = function(y, m, d) {
-    # TODO speed up with tables?
-    caldate_of(as.Date(paste0(y,"-",m,"-",d)))
+caldate_of_ymd_vecs <- function(y, m, d) {
+  # TODO speed up with tables?
+  caldate_of(as.Date(paste0(y, "-", m, "-", d)))
 }
 #' @export
-caldate_of_ymd.integer = function(obj) {
-    d = obj %% 100L
-    ym = obj %/% 100L
-    m = ym %% 100L
-    y = ym %/% 100L
-    caldate_of_ymd_vecs(y,m,d)
+caldate_of_ymd.integer <- function(obj) {
+  d <- obj %% 100L
+  ym <- obj %/% 100L
+  m <- ym %% 100L
+  y <- ym %/% 100L
+  caldate_of_ymd_vecs(y, m, d)
 }
 #' @export
-caldate_of_ymd.numeric = function(obj) {
-    if (!all(as.integer(obj) == obj)) {
-        stop ('obj must not have fractional part')
-    }
-    caldate_of_ymd.integer(as.integer(obj))
+caldate_of_ymd.numeric <- function(obj) {
+  if (!all(as.integer(obj) == obj)) {
+    stop("obj must not have fractional part")
+  }
+  caldate_of_ymd.integer(as.integer(obj))
 }
 # XXX below names vs. mon1, mday1?...
 # XXX default keys being 1L, 2L, 3L?
 #' @export
-caldate_of_ymd.list = function(obj, y_key="year", m_key="mon", d_key="mday") {
-    y = obj[[y_key]]
-    m = obj[[m_key]]
-    d = obj[[d_key]]
-    caldate_of_ymd_vecs(y,m,d)
+caldate_of_ymd.list <- function(obj, y_key = "year", m_key = "mon", d_key = "mday") {
+  y <- obj[[y_key]]
+  m <- obj[[m_key]]
+  d <- obj[[d_key]]
+  caldate_of_ymd_vecs(y, m, d)
 }
 #' @export
-caldate_of_ymd.data.frame = caldate_of_ymd.list
+caldate_of_ymd.data.frame <- caldate_of_ymd.list
 
 
 # ********************************************************************************
 # * Getting information out of a caldate:
 # ********************************************************************************
 
+# FIXME generics...
+
+# XXX might want calyear class, fine, distinct name from "year".  What about classes for other concepts though?
+
 #' @export
-year_of.epicalendar_caldate = function(obj) {
-    days_from_origin = unclass(obj)
-    periods_from_origin = days_from_origin %/% date_cycle_period
-    period_offset = days_from_origin %% date_cycle_period
-    caldate_origin_year +
-        date_cycle_years_per_cycle*periods_from_origin +
-        date_cycle_year_offset_pattern[period_offset+1L]
+year_of.epicalendar_caldate <- function(obj) {
+  days_from_origin <- unclass(obj)
+  periods_from_origin <- days_from_origin %/% date_cycle_period
+  period_offset <- days_from_origin %% date_cycle_period
+  caldate_origin_year +
+    date_cycle_years_per_cycle * periods_from_origin +
+    date_cycle_year_offset_pattern[period_offset + 1L]
 }
 
 #' @export
-yday0_of.epicalendar_caldate = function(obj) {
-    days_from_origin = unclass(obj)
-    period_offset = days_from_origin %% date_cycle_period
-    date_cycle_yday0_pattern[period_offset+1L]
+yday0_of.epicalendar_caldate <- function(obj) {
+  days_from_origin <- unclass(obj)
+  period_offset <- days_from_origin %% date_cycle_period
+  date_cycle_yday0_pattern[period_offset + 1L]
 }
 #' @export
-yday1_of.epicalendar_caldate = function(obj) {
-    yday0_of(obj) + 1L
-}
-
-#' @export
-mon0_of.epicalendar_caldate = function(obj) {
-    days_from_origin = unclass(obj)
-    period_offset = days_from_origin %% date_cycle_period
-    date_cycle_mon0_pattern[period_offset+1L]
-}
-#' @export
-mon1_of.epicalendar_caldate = function(obj) {
-    mon0_of.epicalendar_caldate(obj) + 1L
+yday1_of.epicalendar_caldate <- function(obj) {
+  yday0_of(obj) + 1L
 }
 
 #' @export
-mday1_of.epicalendar_caldate = function(obj) {
-    days_from_origin = unclass(obj)
-    period_offset = days_from_origin %% date_cycle_period
-    date_cycle_mday1_pattern[period_offset+1L]
+mon0_of.epicalendar_caldate <- function(obj) {
+  days_from_origin <- unclass(obj)
+  period_offset <- days_from_origin %% date_cycle_period
+  date_cycle_mon0_pattern[period_offset + 1L]
 }
 #' @export
-mday0_of.epicalendar_caldate = function(obj) {
-    mday1_of.epicalendar_caldate(obj) - 1L
-}
-
-#' @export
-wday0_of.epicalendar_caldate = function(obj) {
-    # Note:
-    # * obj's wday0 is congruent to (unclassed obj + offset) mod 7
-    # * caldate.origin.wday0 is congruent to (unclassed origin + offset) mod 7
-    # * unclassed origin = 0
-    # * so caldate.origin.wday0 is congruent to offset mod 7
-    # * so obj's wday0 is congruent to (unclassed obj + caldate.origin.wday0) mod 7
-    days_from_origin = unclass(obj)
-    wday0 = (days_from_origin + caldate_origin_wday0) %% 7L
-    wday0
-}
-#' @export
-wday1_of.epicalendar_caldate = function(obj) {
-    wday0 = get_wday0.epicalendar_caldate(obj)
-    wday7 = wday0 + 7L*(wday0==0L) # (implicit conversion from TRUE/FALSE to 1/0)
-    wday7
+mon1_of.epicalendar_caldate <- function(obj) {
+  mon0_of.epicalendar_caldate(obj) + 1L
 }
 
 #' @export
-n0_of_same_wday_in_year_up_to.epicalendar_caldate = function(obj) {
-    yday0_of(obj) %/% 7L
+mday1_of.epicalendar_caldate <- function(obj) {
+  days_from_origin <- unclass(obj)
+  period_offset <- days_from_origin %% date_cycle_period
+  date_cycle_mday1_pattern[period_offset + 1L]
 }
 #' @export
-n1_of_same_wday_in_year_up_to.epicalendar_caldate = function(obj) {
-    ## xxx potential good use of an inlining function
-    yday0_of(obj) %/% 7L + 1L
+mday0_of.epicalendar_caldate <- function(obj) {
+  mday1_of.epicalendar_caldate(obj) - 1L
+}
+
+#' @export
+wday0_of.epicalendar_caldate <- function(obj) {
+  # Note:
+  # * obj's wday0 is congruent to (unclassed obj + offset) mod 7
+  # * caldate.origin.wday0 is congruent to (unclassed origin + offset) mod 7
+  # * unclassed origin = 0
+  # * so caldate.origin.wday0 is congruent to offset mod 7
+  # * so obj's wday0 is congruent to (unclassed obj + caldate.origin.wday0) mod 7
+  days_from_origin <- unclass(obj)
+  wday0 <- (days_from_origin + caldate_origin_wday0) %% 7L
+  wday0
+}
+#' @export
+wday1_of.epicalendar_caldate <- function(obj) {
+  wday0 <- get_wday0.epicalendar_caldate(obj)
+  wday7 <- wday0 + 7L * (wday0 == 0L) # (implicit conversion from TRUE/FALSE to 1/0)
+  wday7
+}
+
+#' @export
+n0_of_same_wday_in_year_up_to.epicalendar_caldate <- function(obj) {
+  yday0_of(obj) %/% 7L
+}
+#' @export
+n1_of_same_wday_in_year_up_to.epicalendar_caldate <- function(obj) {
+  # XXX potential good use of an inlining function
+  yday0_of(obj) %/% 7L + 1L
 }
 
 #' @export
@@ -195,7 +205,7 @@ as.Date.epicalendar_caldate <-
   if (caldate_origin_Date_as_integer == 0L) {
     function(x, ...) {
       # XXX assumes things about structure of Date objects... check if they can be relied on
-      x_as_Date = x
+      x_as_Date <- x
       class(x_as_Date) <- "Date"
       x_as_Date
     }
@@ -206,7 +216,7 @@ as.Date.epicalendar_caldate <-
   }
 
 # ********************************************************************************
-# * "Universal" basic convenience functions for caldates:
+# * General convenience functions for caldates:
 # ********************************************************************************
 
 #' @export
@@ -222,14 +232,15 @@ format.epicalendar_caldate <- function(x, ...) {
 # `print`, `vec_size`, extractors, setters: provided by vctrs
 
 # ********************************************************************************
-# * Arithmetic
+# * Arithmetic for caldates:
 # ********************************************************************************
 
 #' @method vec_arith epicalendar_caldate
 #' @export
 #' @export vec_arith.epicalendar_caldate
-vec_arith.epicalendar_caldate <- function(op, x, y, ...)
+vec_arith.epicalendar_caldate <- function(op, x, y, ...) {
   UseMethod("vec_arith.epicalendar_caldate", y)
+}
 
 #' @method vec_arith.epicalendar_caldate default
 #' @export
@@ -240,8 +251,7 @@ vec_arith.epicalendar_caldate.default <- function(op, x, y, ...) {
 #' @method vec_arith.epicalendar_caldate integer
 #' @export
 vec_arith.epicalendar_caldate.integer <- function(op, x, y, ...) {
-  switch(
-    op,
+  switch(op,
     "+" = new_vctr(unclass(x) + y, class = "epicalendar_caldate"),
     "-" = new_vctr(unclass(x) - y, class = "epicalendar_caldate"),
     stop_incompatible_op(op, x, y)
