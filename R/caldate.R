@@ -1,6 +1,10 @@
 #' @include epicalendar-utils.R
 NULL
 
+# TODO look into clock pkg, consider lubridate compatibility
+
+# TODO difftime arith if possible with base difftimes
+
 # ********************************************************************************
 # * Constants:
 # ********************************************************************************
@@ -199,6 +203,8 @@ n1_of_same_wday_in_year_up_to.epicalendar_caldate <- function(obj) {
   # XXX potential good use of an inlining function
   yday0_of(obj) %/% 7L + 1L
 }
+
+# FIXME rely on vctrs if possible:
 
 #' @export
 as.Date.epicalendar_caldate <-

@@ -13,3 +13,4 @@ RoxygenNote: 7.3.1
 Collate: 
     'epicalendar-utils.R'
     'caldate.R'
+    'getter-generics.R'
