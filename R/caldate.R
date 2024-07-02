@@ -3,6 +3,8 @@ NULL
 
 # TODO look into clock pkg, consider lubridate compatibility
 
+# TODO port over calweek
+
 # TODO difftime arith if possible with base difftimes
 
 # ********************************************************************************
@@ -77,6 +79,14 @@ caldate_of.Date <-
     #     as.integer(obj) - caldate.origin.Date.as.integer,
     #     "caldate"
     # )
+    # XXX maybe we should wrap in a list + use a vec_proxy in order to avoid vctrs:::vec_arith.difftime.numeric... if that's actually whats going on and not just another form of:
+    # FIXME consider also what's going on with transpose... seems like Ops.difftime wins out and potentially does the wrong thing; related: https://github.com/r-lib/vctrs/issues/160, maybe https://github.com/wch/r-source/blob/02011ce032940791908769df154c3238cf06af9f/src/main/arithmetic.c#L390, https://github.com/wch/r-source/blob/02011ce032940791908769df154c3238cf06af9f/src/main/arithmetic.c#L520
+    # ... or try S4, or ALTREP magic?
+    # ... or try to detect attachment of "units" attribute or raise errors when it's set?
+    # is it allowed to attach global calling handlers to try to promote specific warnings to errors?
+    # masquerade everything as regular Dates and see if special logic makes it work?
+    #
+    # at least try to get a hard error, and provide an "advance"/etc. method that actually works
     new_vctr(
       vec_cast(unclass(obj), integer()) - caldate_origin_Date_as_integer,
       class = "epicalendar_caldate"
@@ -251,6 +261,7 @@ vec_arith.epicalendar_caldate <- function(op, x, y, ...) {
 #' @method vec_arith.epicalendar_caldate default
 #' @export
 vec_arith.epicalendar_caldate.default <- function(op, x, y, ...) {
+  # FIXME why isn't this being used in caldate_of(Sys.Date()) + (Sys.Date() - Sys.Date()) ?
   stop_incompatible_op(op, x, y)
 }
 
@@ -268,4 +279,13 @@ vec_arith.epicalendar_caldate.integer <- function(op, x, y, ...) {
 #' @export
 vec_arith.epicalendar_caldate.double <- function(op, x, y, ...) {
   vec_arith.epicalendar_caldate.integer(op, x, vec_cast(y, integer()), ...)
+}
+
+#' @method vec_arith.epicalendar_caldate difftime
+#' @export
+vec_arith.epicalendar_caldate.difftime <- function(op, x, y, ...) {
+  if (! attr(y, "units") %in% c("days", "weeks")) {
+    cli_abort('Cannot perform arithmetic on <epicalendar_caldate> Cannot add difftime with units of "{attr(y, "units")}"')
+  }
+  # FIXME finish
 }
