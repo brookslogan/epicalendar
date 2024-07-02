@@ -1,0 +1,15 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+inst/doc
+docs
+/doc/
+/Meta/
+*.DS_Store
+
+# Delphi custom
+renv/
+renv.lock
+.Rprofile
