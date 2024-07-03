@@ -60,6 +60,8 @@ date_cycle_mday1_pattern <- as.POSIXlt(date_cycle_dates)$mday
 
 # TODO vctrs coercion and cast functionality
 
+# TODO tz = to handle areas near international date line that have skipped or repeated a day?
+
 #' @export
 caldate_of <- function(obj, ...) UseMethod("caldate_of", obj)
 #' @export
