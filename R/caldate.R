@@ -1,7 +1,7 @@
 #' @include epicalendar-utils.R
 NULL
 
-# TODO look into clock pkg, consider lubridate compatibility
+# TODO look into clock pkg, consider lubridate compatibility, look at gregorian package
 
 # TODO port over calweek
 
