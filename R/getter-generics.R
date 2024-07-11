@@ -1,4 +1,3 @@
-
 #' @export
 year_of <- function(obj) UseMethod("year_of", obj)
 
