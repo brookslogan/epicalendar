@@ -1,6 +1,3 @@
-#' @include epicalendar-utils.R
-NULL
-
 # TODO look into clock pkg, consider lubridate compatibility, look at gregorian package
 
 # TODO port over calweek
@@ -85,9 +82,9 @@ vec_proxy.epicalendar_caldate <- function(x, ...) {
   # classes, attributes, or S4 flag (though potentially preserving any
   # underlying ALTREP):
   #
-  # `as.integer` strips attributes (and at least sometimes S4 flag, but docs
-  # don't guarantee that)
   as.integer(unclass(asS4(x, FALSE, FALSE)))
+  # ^ `as.integer` strips attributes (and at least sometimes the S4 flag, but
+  # docs don't guarantee that)
 }
 
 #' @export
@@ -211,9 +208,15 @@ wday0_of.epicalendar_caldate <- function(obj) {
   wday0 <- (days_from_origin + caldate_origin_wday0) %% 7L
   wday0
 }
+
 #' @export
 wday1_of.epicalendar_caldate <- function(obj) {
-  wday0 <- get_wday0.epicalendar_caldate(obj)
+  wday0_of.epicalendar_caldate(obj) + 1L
+}
+
+#' @export
+wday7_of.epicalendar_caldate <- function(obj) {
+  wday0 <- wday0_of.epicalendar_caldate(obj)
   wday7 <- wday0 + 7L * (wday0 == 0L) # (implicit conversion from TRUE/FALSE to 1/0)
   wday7
 }
@@ -318,7 +321,8 @@ setMethod("+", c("epicalendar_caldate", "integer"), function(e1, e2) {
   vec_restore(vec_proxy(e1) + e2, e1)
 })
 
-setOldClass("difftime") # FIXME might need more information to be correct / compatible with other oldclasses of it.  E.g., contains (numeric? double? R-version-dependent?) and slots (for units)
+
+setOldClass("difftime")
 
 #' @export
 setMethod("+", c("epicalendar_caldate", "difftime"), function(e1, e2) {
@@ -326,4 +330,10 @@ setMethod("+", c("epicalendar_caldate", "difftime"), function(e1, e2) {
     cli_abort('Cannot perform arithmetic on <epicalendar_caldate> Cannot add difftime with units of "{attr(y, "units")}"')
   }
   vec_restore(vec_proxy(e1) + as.integer(e2, units = "days"), e1)
+})
+
+#' @export
+setMethod("+", c("difftime", "epicalendar_caldate"), function(e1, e2) {
+  # FIXME better message
+  stop("not supported")
 })
