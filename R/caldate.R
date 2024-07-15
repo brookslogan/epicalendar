@@ -51,8 +51,6 @@ date_cycle_mday1_pattern <- as.POSIXlt(date_cycle_dates)$mday
 
 # XXX consider new_caldate
 
-# TODO check dots empty
-
 # TODO remove branching based on origin... just insert package-level aborts at each function that relies on instead
 
 # TODO vctrs coercion and cast functionality
@@ -63,17 +61,29 @@ caldate_class_head <- "epicalendar_caldate"
 caldate_class_vec <- c("epicalendar_caldate", "vctrs_vctr")
 caldate_class_vec_with_package <- `attr<-`(caldate_class_vec, "package", "epicalendar")
 
-setOldClass(caldate_class_vec,
+#' @export
+setOldClass(
+  caldate_class_vec,
   prototype = `attr<-`(`class<-`(
     vctrs::new_vctr(integer(0L)),
     caldate_class_vec_with_package
   ), ".S3Class", caldate_class_vec)
 )
 
+#' @export
 new_caldate <- function(days_from_origin) {
-  # days_from_origin should be integer-class
+  days_from_origin <- vctrs::vec_cast(assert_integerish(days_from_origin, any.missing = FALSE), integer())
   asS4(`attr<-`(`class<-`(days_from_origin, caldate_class_vec_with_package), ".S3Class", caldate_class_vec))
 }
+
+#' @export
+setMethod("initialize", caldate_class_head, function(.Object, days_from_origin, ...) {
+  check_dots_empty()
+  if (!is.integer(days_from_origin)) {
+    cli_abort('`days_from_origin` must be of integer type; see `is.integer` for details, or `caldate_of` for friendlier constructors')
+  }
+  new_caldate(days_from_origin)
+})
 
 #' @export
 vec_proxy.epicalendar_caldate <- function(x, ...) {
@@ -191,6 +201,7 @@ mday1_of.epicalendar_caldate <- function(obj) {
   period_offset <- days_from_origin %% date_cycle_period
   date_cycle_mday1_pattern[period_offset + 1L]
 }
+
 #' @export
 mday0_of.epicalendar_caldate <- function(obj) {
   mday1_of.epicalendar_caldate(obj) - 1L
@@ -225,6 +236,7 @@ wday7_of.epicalendar_caldate <- function(obj) {
 n0_of_same_wday_in_year_up_to.epicalendar_caldate <- function(obj) {
   yday0_of(obj) %/% 7L
 }
+
 #' @export
 n1_of_same_wday_in_year_up_to.epicalendar_caldate <- function(obj) {
   # XXX potential good use of an inlining function
@@ -237,9 +249,9 @@ stopifnot(caldate_origin_Date_as_integer == 0L)
 #' @export
 as.Date.epicalendar_caldate <-
   function(x, ...) {
+    check_dots_empty()
     # XXX assumes things about structure of Date objects... check if they can be relied on
-    # TODO reject dots
-    `class<-`(vec_proxy(x), "Date")
+    `class<-`(as.double(vec_proxy(x)), "Date")
   }
 
 # ********************************************************************************
@@ -273,60 +285,33 @@ setMethod("show", "epicalendar_caldate", function(object) {
 
 # `print`, `vec_size`, extractors, setters, ...: provided by vctrs.
 
+#' @export
+vec_ptype_abbr.epicalendar_caldate <- function(x, ...) {
+  "caldate"
+}
+
+#' @export
+vec_ptype_full.epicalendar_caldate <- function(x, ...) {
+  "epicalendar::caldate"
+}
+
 # ********************************************************************************
 # * Arithmetic for caldates:
 # ********************************************************************************
-
-# #' @method vec_arith epicalendar_caldate
-# #' @export
-# #' @export vec_arith.epicalendar_caldate
-# vec_arith.epicalendar_caldate <- function(op, x, y, ...) {
-#   UseMethod("vec_arith.epicalendar_caldate", y)
-# }
-
-# #' @method vec_arith.epicalendar_caldate default
-# #' @export
-# vec_arith.epicalendar_caldate.default <- function(op, x, y, ...) {
-#   # FIXME why isn't this being used in caldate_of(Sys.Date()) + (Sys.Date() - Sys.Date()) ?
-#   stop_incompatible_op(op, x, y)
-# }
-
-# #' @method vec_arith.epicalendar_caldate integer
-# #' @export
-# vec_arith.epicalendar_caldate.integer <- function(op, x, y, ...) {
-#   switch(op,
-#     "+" = new_vctr(unclass(x) + y, class = "epicalendar_caldate"),
-#     "-" = new_vctr(unclass(x) - y, class = "epicalendar_caldate"),
-#     stop_incompatible_op(op, x, y)
-#   )
-# }
-
-# #' @method vec_arith.epicalendar_caldate double
-# #' @export
-# vec_arith.epicalendar_caldate.double <- function(op, x, y, ...) {
-#   vec_arith.epicalendar_caldate.integer(op, x, vec_cast(y, integer()), ...)
-# }
-
-# #' @method vec_arith.epicalendar_caldate difftime
-# #' @export
-# vec_arith.epicalendar_caldate.difftime <- function(op, x, y, ...) {
-#   if (!attr(y, "units") %in% c("days", "weeks")) {
-#     cli_abort('Cannot perform arithmetic on <epicalendar_caldate> Cannot add difftime with units of "{attr(y, "units")}"')
-#   }
-#   # FIXME finish
-# }
 
 #' @export
 setMethod("+", c("epicalendar_caldate", "integer"), function(e1, e2) {
   vec_restore(vec_proxy(e1) + e2, e1)
 })
 
-
-setOldClass("difftime")
+#' @export
+setMethod("-", c("epicalendar_caldate", "integer"), function(e1, e2) {
+  vec_restore(vec_proxy(e1) - e2, e1)
+})
 
 #' @export
 setMethod("+", c("epicalendar_caldate", "difftime"), function(e1, e2) {
-  if (!attr(y, "units") %in% c("days", "weeks")) {
+  if (!attr(e2, "units") %in% c("days", "weeks")) {
     cli_abort('<epicalendar_caldate> + <difftime> requires difftime to have units of days or weeks, not "{attr(y, "units")}"')
   }
   vec_restore(vec_proxy(e1) + vctrs::vec_cast(as.numeric(e2, units = "days"), integer()), e1)
@@ -342,6 +327,10 @@ setMethod("-", c("epicalendar_caldate", "difftime"), function(e1, e2) {
 
 #' @export
 setMethod("+", c("difftime", "epicalendar_caldate"), function(e1, e2) {
-  # FIXME better message
-  stop("not supported")
+  stop_incompatible_op("+", e1, e2, details = "try <epicalendar_caldate> + <difftime>")
+})
+
+#' @export
+setMethod("-", c("difftime", "epicalendar_caldate"), function(e1, e2) {
+  stop_incompatible_op("-", e1, e2)
 })

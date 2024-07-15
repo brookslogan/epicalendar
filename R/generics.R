@@ -5,13 +5,16 @@
 #'
 #' Here, "unique" means that that every possible time point or time interval of
 #' an accepted class should be guaranteed to have exactly one plausible value.
-#' This is meant to avoid bugs by forbidding, for example, `year_of()` from
+#' This is meant to avoid bugs by forbidding, for example, [`year_of()`] from
 #' operating on [`calweek`]s, since a single week can contain days belonging to
-#' two different years (see [`owning_year_of()`] instead).
+#' two different years (try feeding through a disambiguating function such as
+#' [`owning_caldate_of()`] first).
 #'
 #' These functions are all vectorized in such a way that the output should have
 #' a [`vctrs::vec_size()`] equal to that of `obj` if it's the only argument, or
-#' the [`vctrs::vec_size_common()`] of all arguments if there are multiple.
+#' the [`vctrs::vec_size_common()`] of all arguments if there are multiple. For
+#' brevity, the descriptions below will describe their operation on length-1
+#' arguments.
 #'
 #' @param obj object representing a time point or time interval
 NULL
@@ -90,3 +93,15 @@ n0_of_same_wday_in_year_up_to <- function(obj) UseMethod("n0_of_same_wday_in_yea
 #'   `n1_of_same_wday_in_year_up_to ` of 1)
 #' @export
 n1_of_same_wday_in_year_up_to <- function(obj) UseMethod("n1_of_same_wday_in_year_up_to", obj)
+
+
+
+
+
+
+
+
+#' @describeIn getters For classes such as calweeks that define "owning" dates,
+#'   the uniquely-associated owning date as a caldate object.
+#' @export
+owning_caldate_of <- function(obj) UseMethod("owning_caldate_of")

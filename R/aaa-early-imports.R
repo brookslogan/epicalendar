@@ -3,12 +3,7 @@
 # collation will put this first, and we don't need to @include it in a bunch of
 # other files and have a Collate:.
 
-# Normal imports:
-
-#' @importFrom vctrs new_vctr vec_cast vec_arith stop_incompatible_op vec_proxy vec_restore
-#' @importFrom cli cli_abort
-#' @importFrom methods setOldClass setMethod
-NULL
+# Normal imports are in epicalendar-package.R.
 
 # Defining the pipe here rather than @importFrom-ing it allows us to remove and
 # rebuild the NAMESPACE file without having errors trying to build package
