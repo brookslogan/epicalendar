@@ -327,9 +327,17 @@ setOldClass("difftime")
 #' @export
 setMethod("+", c("epicalendar_caldate", "difftime"), function(e1, e2) {
   if (!attr(y, "units") %in% c("days", "weeks")) {
-    cli_abort('Cannot perform arithmetic on <epicalendar_caldate> Cannot add difftime with units of "{attr(y, "units")}"')
+    cli_abort('<epicalendar_caldate> + <difftime> requires difftime to have units of days or weeks, not "{attr(y, "units")}"')
   }
-  vec_restore(vec_proxy(e1) + as.integer(e2, units = "days"), e1)
+  vec_restore(vec_proxy(e1) + vctrs::vec_cast(as.numeric(e2, units = "days"), integer()), e1)
+})
+
+#' @export
+setMethod("-", c("epicalendar_caldate", "difftime"), function(e1, e2) {
+  if (!attr(e2, "units") %in% c("days", "weeks")) {
+    cli_abort('<epicalendar_caldate> - <difftime> requires difftime to have units of days or weeks, not "{attr(y, "units")}"')
+  }
+  vec_restore(vec_proxy(e1) - vctrs::vec_cast(as.numeric(e2, units = "days"), integer()), e1)
 })
 
 #' @export
