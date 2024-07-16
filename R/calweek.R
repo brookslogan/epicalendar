@@ -95,7 +95,7 @@ format.epicalendar_calweek <- function(x, ...) {
   owning_caldates <- owning_caldate_of(x)
   owning_year <- year_of(owning_caldates)
   owning_week <- n1_of_same_wday_in_year_up_to(owning_caldates)
-  parts <- vec_recycle_common(owning_year, attr(x, "year_week_separator"), owning_week)
+  parts <- vec_recycle_common(owning_year, attr(x, "year_week_separator"), sprintf("%02d", owning_week))
   pasted_parts <- paste0(parts[[1L]], parts[[2L]], parts[[3L]])
   pasted_parts
 }
