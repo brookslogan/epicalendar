@@ -17,4 +17,5 @@ Imports:
     methods,
     rlang,
     checkmate,
-    pillar
+    pillar,
+    graphics

@@ -66,6 +66,27 @@ vec_restore.epicalendar_calweek <- function(x, to, ...) {
   asS4(NextMethod())
 }
 
+# Conversions to integer and double are allowed in order to make it easier to
+# prepare linear-trend features; hopefully no users will be expecting these to
+# output a YYYYww-format int. Development-wise, the availability of these
+# coercions may also impacts what we need to do for plotting interop.
+
+# NOTE vec_cast has reverse-order double dispatch
+
+#' @method vec_cast.integer epicalendar_calweek
+#' @export
+vec_cast.integer.epicalendar_calweek <- function(x, to, ...) {
+  # calweek to integer
+  vec_proxy(x)
+}
+
+#' @method vec_cast.double epicalendar_calweek
+#' @export
+vec_cast.double.epicalendar_calweek <- function(x, to, ...) {
+  # calweek to double
+  as.double(vec_proxy(x))
+}
+
 # ********************************************************************************
 # * General convenience functions for calweeks:
 # ********************************************************************************

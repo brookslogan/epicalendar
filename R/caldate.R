@@ -72,7 +72,7 @@ setOldClass(
 
 #' @export
 new_caldate <- function(days_from_origin) {
-  days_from_origin <- vctrs::vec_cast(assert_integerish(days_from_origin, any.missing = FALSE), integer())
+  days_from_origin <- vec_cast(assert_integerish(days_from_origin, any.missing = FALSE), integer())
   asS4(`attr<-`(`class<-`(days_from_origin, caldate_class_vec_with_package), ".S3Class", caldate_class_vec))
 }
 
@@ -253,6 +253,27 @@ as.Date.epicalendar_caldate <-
     # XXX assumes things about structure of Date objects... check if they can be relied on
     `class<-`(as.double(vec_proxy(x)), "Date")
   }
+
+# Conversions to integer and double are allowed in order to make it easier to
+# prepare linear-trend features; hopefully no users will be expecting these to
+# output a YYYYmmdd-format int. Development-wise, the availability of these
+# coercions may also impacts what we need to do for plotting interop.
+
+# NOTE vec_cast has reverse-order double dispatch
+
+#' @method vec_cast.integer epicalendar_caldate
+#' @export
+vec_cast.integer.epicalendar_caldate <- function(x, to, ...) {
+  # caldate to integer
+  vec_proxy(x)
+}
+
+#' @method vec_cast.double epicalendar_caldate
+#' @export
+vec_cast.double.epicalendar_caldate <- function(x, to, ...) {
+  # caldate to double
+  as.double(vec_proxy(x))
+}
 
 # ********************************************************************************
 # * General convenience functions for caldates:
