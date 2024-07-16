@@ -145,7 +145,7 @@ setMethod("+", c("epicalendar_calweek", "difftime"), function(e1, e2) {
   if (!attr(e2, "units") %in% c("days", "weeks")) {
     cli_abort('<epicalendar_calweek> + <difftime> requires difftime to have units of days or weeks, not "{attr(y, "units")}"')
   }
-  vec_restore(vec_proxy(e1) + vctrs::vec_cast(as.numeric(e2, units = "weeks"), integer()), e1)
+  vec_restore(vec_proxy(e1) + 7L * vctrs::vec_cast(as.numeric(e2, units = "weeks"), integer()), e1)
 })
 
 #' @export
@@ -153,7 +153,7 @@ setMethod("-", c("epicalendar_calweek", "difftime"), function(e1, e2) {
   if (!attr(e2, "units") %in% c("days", "weeks")) {
     cli_abort('<epicalendar_calweek> - <difftime> requires difftime to have units of days or weeks, not "{attr(y, "units")}"')
   }
-  vec_restore(vec_proxy(e1) - vctrs::vec_cast(as.numeric(e2, units = "weeks"), integer()), e1)
+  vec_restore(vec_proxy(e1) - 7L * vctrs::vec_cast(as.numeric(e2, units = "weeks"), integer()), e1)
 })
 
 #' @export
