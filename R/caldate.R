@@ -10,6 +10,10 @@
 
 # TODO difftime arith if possible with base difftimes
 
+# TODO consider double or flexible typeof
+
+# TODO consider double typeof & "extending" Date (... potentially more internal generics issues?)
+
 # ********************************************************************************
 # * Constants:
 # ********************************************************************************
