@@ -1,4 +1,4 @@
-# FIXME tsibble yearweek does actually seem compatible with epiweeks; it's clock's year_week_day that seems to do something different; maybe just contribute ideas upstream to tsibble?
+# FIXME tsibble yearweek does actually seem compatible with epiweeks; it's clock's year_week_day that seems to do something different; maybe just contribute ideas upstream to tsibble? Revisiting... can't reproduce clock differences with epiweeks... maybe they are compatible?
 
 # FIXME buggy max (don't forward to vctrs)
 
